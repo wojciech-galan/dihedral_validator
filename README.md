@@ -1,1 +1,1 @@
-# dihedral_validator
+# dihedral_validator_gromacs_version
