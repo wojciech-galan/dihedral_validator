@@ -21,14 +21,21 @@ def prepare_itp_file(in_ipt: str, new_params: dict, params_type: int, out_itp: s
         if filter_out_comments.get(k, False):
             sections_dict[k] = remove_lines_containing_comments[v]
 
-def create_dihedraltypes(params, ):pass
+def create_dihedraltypes(params, base_comment_string:str =';  i    j    k    l   func     coefficients', additional_comment_string=';', newline='\n'):
+    s = newline.join(['[ dihedraltypes ]', base_comment_string, additional_comment_string]) + newline
+    for k, v in params.items():
+        a, b, c, d, e, f = 0, 0, 0, 0, 0, 0
+        print(k, adapt_input_dihedral_types_to_gromacs_format(k))
+        s+= '{} {:9.4f} {:9.4f} {:9.4f} {:9.4f} {:9.4f} {:9.4f}{}'.format(adapt_input_dihedral_types_to_gromacs_format(k), a, b, c, d, e, f, newline)
+    return s
 
 
-def adapt_input_dihedral_types_to_gromacs_format(input_dihedral:str)
+
+def adapt_input_dihedral_types_to_gromacs_format(input_dihedral:str) -> str:
     # example input: CT-CT-CT-OS
     # example output: CT    CT   CT   OS
-    splitted = input_dihedral.split('-')
-    return splitted[0]+4*' '+splitted[1]+3*' '+splitted[2]+3*' '+splitted[3]
+    a, b, c, d = input_dihedral.split('-')
+    return '{}    {}   {}   {}'.format(a, b, c, d)
 
 
 def parse_itp_file(in_file: str, newline='\n', section_re_template: str = SECTION_RE_TEMPLATE,
@@ -74,6 +81,7 @@ if __name__ == '__main__':
     from dihedral_validator.input import read_input_file
     params = read_input_file(os.path.join('example', 'input'))
     print(params)
+    print(create_dihedraltypes({'CT-CT-CT-OS': [1, 2, 3, 4, 5, 6], 'CT-CT-OS-CT': [2, 3, 4, 5, 6, 7]}))
     #print(parse_itp_file(os.path.join('example', 'gromacs_specific_files', 'triacetin_qqAWA_q1_new_t3t4.itp'), {}))
     # TODO program i data puszczania tej analizy w dihedraltypes + dodatki (ładunki czy coś) - czyli zrobienie dihedraltypes od zera
     # TODO ale program jest przez jakiś wyższy skrypt ustawiany
