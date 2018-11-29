@@ -1,0 +1,35 @@
+title			= Triacetin gas phase MD
+tinit			= 0
+cpp			= /lib/cpp
+constraints		= hbonds
+constraint_algorithm 	= lincs
+unconstrained_start	= no
+integrator		= md
+dt			= 0.002  ; ps
+nsteps			= 5000000 ; 10ns production
+nstcomm			= 5
+comm_mode		= linear
+cutoff_scheme		= Group
+; output
+nstxout			= 5000	; restart every 10 ps
+nstvout			= 5000
+nstxtcout		= 5000	; trajectory sampling
+nstfout			= 0
+nstlog			= 50000
+nstenergy		= 500
+;
+ns_type			= simple
+nstlist			= 5
+pbc			= no
+coulombtype		= cutoff
+rvdw			= 1.0
+rcoulomb		= 1.0
+rlist			= 1.0
+; temperature coupling
+tcoupl			= nose-hoover
+tc-grps			= System
+tau_t			= 0.5
+ref_t			= 298.15 ; 25*C
+; pressure
+Pcoupl			= no
+

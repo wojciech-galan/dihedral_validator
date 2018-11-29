@@ -1,0 +1,9 @@
+#include "oplsaa.ff/forcefield.itp"
+#include "triacetin_qqAWA_q1_new_t3t4.itp"
+
+[ system ]
+single triacetin molecule dHvap
+;; liquid triacetin (glycerin triacetate)
+
+[ molecules ]
+triacetin   100

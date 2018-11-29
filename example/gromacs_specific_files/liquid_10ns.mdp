@@ -1,0 +1,44 @@
+title			= Triacetin liquid phase MD
+tinit			= 0
+cpp			= /lib/cpp
+constraints		= hbonds
+constraint_algorithm 	= lincs
+unconstrained_start	= no
+integrator		= md
+dt			= 0.002  ; ps
+nsteps			= 5000000 ; 10ns production
+nstcomm			= 5
+nsttcouple		= 5
+; comm_mode = angular
+comm_mode		= linear
+cutoff_scheme		= Verlet
+; output
+nstxout			= 5000	; restart every 10 ps
+nstvout			= 5000
+nstxtcout		= 500	; trajectory sampling
+nstfout			= 0
+nstlog			= 50000
+nstenergy		= 500
+;
+ns_type			= grid  
+nstlist			= 20
+pbc			= xyz
+coulombtype		= pme	; cutoff/PME
+rvdw			= 1.0
+rcoulomb		= 1.0
+rlist			= 1.0
+; temperature coupling
+tcoupl			= nose-hoover
+tc-grps			= System
+tau_t			= 0.5
+ref_t			= 298.15 ; 80*C
+; pressure
+Pcoupl			= parrinello-rahman 
+Pcoupltype		= isotropic
+tau_p			=    5.0
+compressibility		= 4.5e-5 
+ref_p			=    1.0 
+;
+gen_vel			= no
+
+
