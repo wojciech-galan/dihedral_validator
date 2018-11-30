@@ -11,15 +11,26 @@ from typing import Match
 from typing import List
 
 SECTION_RE_TEMPLATE = '^\[ {} \]$\n(^.+$\n)+'
-DEFINE_RE = '^#define .+'
+DEFINE_RE = re.compile('^#define .+')
+COMMENT_RE = re.compile('(^;.*\n)+', re.MULTILINE)
 
 
 def prepare_itp_file(in_ipt: str, new_params: dict, params_type: int, out_itp: str,
-                     filter_out_comments: Dict[str, bool]):
+                     comment_substitution: Dict[str, str]):
     defines, sections_dict = parse_itp_file(in_ipt)
     for k, v in sections_dict:
         if filter_out_comments.get(k, False):
             sections_dict[k] = remove_lines_containing_comments[v]
+
+def substitute_comment(section_string:str, new_comment:str, comment_re:Pattern=COMMENT_RE, newline:str='\n') -> str:
+    '''
+    Substitutes comments in section_string with new_comment
+    :param section_string:
+    :param new_comment:
+    :return:
+    '''
+    replacement_string = newline.join(['; ' + s for s in new_comment.split(newline)]) + newline
+    return comment_re.sub(replacement_string, section_string)
 
 def create_dihedraltypes(params, base_comment_string:str =';  i    j    k    l   func     coefficients', additional_comment_string=';', newline='\n'):
     s = newline.join(['[ dihedraltypes ]', base_comment_string, additional_comment_string]) + newline
@@ -80,7 +91,11 @@ if __name__ == '__main__':
     from dihedral_validator.input import read_input_file
     params = read_input_file(os.path.join('example', 'input'))
     print(params)
-    print(create_dihedraltypes({'CT-CT-CT-OS': [1, 2, 3, 4], 'CT-CT-OS-CT': [2, 3, 4, 5, 6, 7]}))
+    created_dihedraltypes = create_dihedraltypes({'CT-CT-CT-OS': [1, 2, 3, 4], 'CT-CT-OS-CT': [2, 3, 4, 5, 6, 7]})
+    print('------------------------------')
+    print(created_dihedraltypes)
+    print('------------------------------')
+    print(substitute_comment(created_dihedraltypes, 'huj dupa\nkurwa cipa'))
     #print(parse_itp_file(os.path.join('example', 'gromacs_specific_files', 'triacetin_qqAWA_q1_new_t3t4.itp'), {}))
     # TODO program i data puszczania tej analizy w dihedraltypes + dodatki (ładunki czy coś) - czyli zrobienie dihedraltypes od zera
     # TODO ale program jest przez jakiś wyższy skrypt ustawiany
