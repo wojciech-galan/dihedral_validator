@@ -4,6 +4,9 @@
 import subprocess
 import os
 import tempfile
+import re
+
+EXTRACT_OUTPUT_RE = '-+\nPotential +([-+]?\d+.\d)'
 
 
 def compute_potential(edr_file_path: str, choice: int = 9, g_energy_command: str = 'gmx energy'):
@@ -38,7 +41,7 @@ def validate_number(number: int):
         raise RuntimeError('Argument should be integer')
 
 
-def extract_energy_from_genergy_output(genergy_output:str) -> float:
+def extract_energy_from_genergy_output(genergy_output:str, re_to_capture_output:str = EXTRACT_OUTPUT_RE) -> float:
     '''
     Extracts interesting parts of string similar to:
     """Energy                      Average   Err.Est.       RMSD  Tot-Drift
@@ -47,11 +50,12 @@ def extract_energy_from_genergy_output(genergy_output:str) -> float:
     :param genergy_output:
     :return:
     '''
-    pass
+    return float(re.search(re_to_capture_output, genergy_output).group(1))
 
+# todo do the same for liquid and density
 
 if __name__ == '__main__':
     # validate_path('kupsko')
     # validate_number('16')
     print(os.listdir('.'))
-    compute_potential('example/gromacs_specific_files/md-gas.edr')
+    print(compute_potential('example/gromacs_specific_files/md-gas.edr'))
