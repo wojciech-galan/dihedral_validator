@@ -9,7 +9,7 @@ from dihedral_validator.input import read_input_file
 def validate_arguments(arguments):
     params = read_input_file(arguments.params_file)
     if arguments.package == 'gromacs':
-
+        pass
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
