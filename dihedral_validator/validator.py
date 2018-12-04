@@ -3,11 +3,13 @@
 
 import argparse
 import sys
+from dihedral_validator.input import read_input_file
 
 
 def validate_arguments(arguments):
+    params = read_input_file(arguments.params_file)
     if arguments.package == 'gromacs':
-        pass
+
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
@@ -15,6 +17,7 @@ def main(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='')  # todo dodać opis
     parser.add_argument('infile', type=str, help='path to parameters file')
     parser.add_argument('package', type=str, help='package which will be used to validate parameters')
+    parser.add_argument('params_file', type=str, help='file containing parameters to be validated')
     parser.add_argument('--param_type', '-p', type=int, default=3, help='forcefield parameters type')
     group = parser.add_argument_group('gromacs', 'gromacs-specific arguments')
     # gromacs - specific
