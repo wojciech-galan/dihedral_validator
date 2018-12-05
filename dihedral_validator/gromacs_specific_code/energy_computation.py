@@ -10,8 +10,18 @@ EXTRACT_OUTPUT_RE = '-+\n{} +([-+]?\d+.\d)'
 
 
 def compute_free_energy(e_pot_liq: float, e_pot_gas: float, temperature: float, num_of_particles: float,
-                        R_CONST: float = 0.0083144598):
-    return e_pot_liq/num_of_particles - e_pot_gas + R_CONST*temperature # result in kJ/mol
+                        R_CONST: float = 0.0083144598) -> float:
+    """
+    Returns result in kcal/mol
+    :param e_pot_liq: liquid potential (kJ/mol)
+    :param e_pot_gas: gas potential (kJ/mol)
+    :param temperature: temperature (K)
+    :param num_of_particles: num ofparticles inliquid phase
+    :param R_CONST: gas constant in kJ/(K*mol)
+    :return:
+    """
+    return (e_pot_liq / num_of_particles - e_pot_gas + R_CONST * temperature) / 4.1868  # result in kcal/mol
+
 
 def extract_from_edr_file(edr_file_path: str, choice: int, choice_string: str, g_energy_command: str = 'gmx energy'):
     # validate user input
@@ -67,5 +77,6 @@ if __name__ == '__main__':
     # print(extract_from_edr_file('example/gromacs_specific_files/md-gas.edr', 9, 'Potential'))
     # print(extract_from_edr_file('example/gromacs_specific_files/md-liquid_10nsRB_bestHC.edr', 20, 'Density'))
     gas_potential = extract_from_edr_file('example/gromacs_specific_files/md-gas.edr', 9, 'Potential')
-    liquid_potential = extract_from_edr_file('example/gromacs_specific_files/md-liquid_10nsRB_bestHC.edr', 10, 'Potential')
+    liquid_potential = extract_from_edr_file('example/gromacs_specific_files/md-liquid_10nsRB_bestHC.edr', 10,
+                                             'Potential')
     print(compute_free_energy(liquid_potential, gas_potential, 280, 100))
