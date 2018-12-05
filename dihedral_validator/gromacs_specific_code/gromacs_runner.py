@@ -9,14 +9,6 @@ from typing import Pattern
 VERSION_RE = re.compile(':-\) .+ (\d+\.\d+(\.\d+)?) +\(-:')
 
 
-class Wrapper():
-    def __init__(self):
-        super().__init__()
-
-    def run(self, command):
-        subprocess.run(command, shell=True, stdout=subprocess.PIPE)
-
-
 def determine_version():
     # gmx -version works for gromasc 2018 and returns output to stdout
     p = subprocess.Popen('gmx -version', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
