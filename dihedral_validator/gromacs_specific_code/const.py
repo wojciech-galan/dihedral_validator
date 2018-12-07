@@ -3,4 +3,4 @@
 
 grompp_dict = {'4': 'grompp', '2018': 'gmx grompp'}
 mdrun_dict = {'4': 'mdrun', '2018': 'gmx mdrun'}
-genergy_dict = {'4': 'genergy', '2018': 'gmx energy'}
+genergy_dict = {'4': 'g_energy', '2018': 'gmx energy'}
