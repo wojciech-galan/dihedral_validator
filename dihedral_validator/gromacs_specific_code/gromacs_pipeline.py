@@ -16,8 +16,8 @@ from dihedral_validator.command_wrapper import SimpleCommandWrapper
 
 
 def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path: str, params_type: int,
-                     ipt_comment_substitution: Dict[str, str], ipt_general_comments: str, top_path: str,
-                     mdp_path: str, gro_path: str,
+                     ipt_comment_substitution: Dict[str, str], ipt_general_comments: str, top_liquid_path: str,
+                     mdp_liquid_path: str, gro_liquid_path: str, top_gas_path: str, mdp_gas_path: str, gro_gas_path: str,
                      molecules: Dict[str, int], system_line: str, forcefield_itp_path: str = 'oplsaa.ff/forcefield.itp',
                      newline: str = '\n'):
     itp_template_modification_time = time.asctime(time.gmtime(os.path.getmtime(itp_template_path)))
@@ -32,17 +32,26 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     gromacs_version = determine_version().split('.')[0]
     prepare_itp_file(itp_template_path, new_params, params_type, itp_out_path, ipt_comment_substitution,
                      ipt_general_comments, newline)
-    create_top_file(os.path.abspath(itp_out_path), molecules, system_line, top_path, forcefield_itp_path, newline)
+    create_top_file(os.path.abspath(itp_out_path), molecules, system_line, top_gas_path, forcefield_itp_path, newline) blah # todo do zmiany molekuły
+    create_top_file(os.path.abspath(itp_out_path), molecules, system_line, top_liquid_path, forcefield_itp_path, newline)
     w = SimpleCommandWrapper()
+    # gas
     with tempfile.NamedTemporaryFile() as tpr_file:
-        w.run('{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
-            grompp_dict[gromacs_version], mdp_path, top_path, gro_path, tpr_file.name, len(new_params)))
+        grompp_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
+            grompp_dict[gromacs_version], mdp_gas_path, top_gas_path, gro_path, tpr_file.name, len(new_params))
+        print(grompp_cmd)
+        # todo gdzie zrobić zrównoleglenie?
+        # co z warningami?
+        w.run(grompp_cmd)
         print(open(tpr_file.name, 'r').read())
-        w.run('{} -deffnm {}'.format(mdrun_dict[gromacs_version], tpr_file.name))#tpr_file.name.split('.')[0]))
-        liquid_potential = extract_from_edr_file()
-        gas_potential = extract_from_edr_file()
+        mdrun_cmd = '{} -deffnm {}'.format(mdrun_dict[gromacs_version], tpr_file.name)
+        print(mdrun_cmd)
+        w.run(mdrun_cmd)
+        # to z dwóch różnych plików
+        #liquid_potential = extract_from_edr_file(tpr_file.rsplit('.',1)[0], 10, 'Potential', gromacs_version)
+        gas_potential = extract_from_edr_file(tpr_file.name.rsplit('.',1)[0], 9, 'Potential', gromacs_version)
         # num of particles from molecules variable?
-        compute_free_energy(liquid_potential, gas_potential, temperature, num_of_particles)
+    compute_free_energy(liquid_potential, gas_potential, temperature, num_of_particles)
 
 
 
