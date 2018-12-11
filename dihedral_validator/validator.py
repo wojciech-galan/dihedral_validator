@@ -57,17 +57,22 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
     assert arguments.package in permited_values['packages']
     assert arguments.param_type in permited_values['param_types']
     if arguments.package == 'gromacs':
-        for arg_name in ['itp_template', 'gro_gas_file', 'gro_liquid_file', 'mdp_gas_file', 'mdp_liquid_file',
-                         'top_gas_file', 'top_liquid_file']:  # TODO dwa ostatnie - sprawdzić istnienie katalogu
+        for arg_name in ['itp_template', 'gro_gas_file', 'gro_liquid_file', 'mdp_gas_file', 'mdp_liquid_file']:
             try_open_for_reading(eval('arguments.{}'.format(arg_name)))
-        assert os.path.isdir(os.path.dirname(arguments.itp_output))
+        for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
+            check_directory_write_access(eval('arguments.{}'.format(arg_name)))
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
 
 def try_open_for_reading(path: str):
-    with open(path, 'r') as f:
+    with open(path, 'r') as _:
         pass
+
+
+def check_directory_write_access(path: str):
+    if not os.access(path, os.W_OK):
+        raise OSError('Either {} directory does not exist or you cannot write to it.'.format(os.path.abspath(path)))
 
 
 if __name__ == '__main__':
