@@ -58,7 +58,7 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
             mdrun_liquid_cmd = '{} -deffnm {}{}'.format(mdrun_dict[gromacs_version], tpr_liquid_file.name, tpr_file_extension[gromacs_version])
             print(mdrun_gas_cmd)
             print(mdrun_liquid_cmd)
-            run_subprocesses_simultaneously(mdrun_gas_cmd, mdrun_liquid_cmd)
+            run_subprocesses_simultaneously(mdrun_gas_cmd, mdrun_liquid_cmd, shell=True)
             # todo można tu dać multiprocessing
             liquid_potential = extract_from_edr_file(tpr_liquid_file.rsplit('.', 1)[0], 10, 'Potential',
                                                      gromacs_version)
@@ -67,7 +67,7 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     temperature_gas = extract_temperature_in_K_from_mdp_file(mdp_gas_path)
     temperature_liquid = extract_temperature_in_K_from_mdp_file(mdp_liquid_path)
     assert temperature_gas == temperature_liquid
-    compute_free_energy(liquid_potential, gas_potential, temperature_gas, molecules_liquid.values()[0])
+    return(compute_free_energy(liquid_potential, gas_potential, temperature_gas, molecules_liquid.values()[0]))
 
 
 def run_subprocesses_simultaneously(cmd1, cmd2, **kwargs):
@@ -83,8 +83,8 @@ if __name__ == '__main__':
     # example / gromacs_specific_files / gas_10ns - qqAWA_q1_new_t3t4.top - c
     # example / gromacs_specific_files / md - gas_10ns - qqAWA_q1.gro - o
     # temp / md - gas.tpr
-    gromacs_pipeline('example/gromacs_specific_files/triacetin_qqAWA_q1_new_t3t4.itp', 'temp/out_itp', 'example/input',
+    print(gromacs_pipeline('example/gromacs_specific_files/triacetin_qqAWA_q1_new_t3t4.itp', 'temp/out_itp', 'example/input',
                      3, {}, '', 'temp/liquid_top.top', 'example/gromacs_specific_files/liquid_10ns.mdp', 'example/gromacs_specific_files/md-liquid_10ns-qqAWA_q1.gro',
                      'temp/gas_top.top', 'example/gromacs_specific_files/gas_10ns.mdp',
                      'example/gromacs_specific_files/md-gas_10ns-qqAWA_q1.gro', {'triacetin': 100}, {'triacetin': 1},
-                     'single triacetin molecule dHvap')  # TODO call the function with nonempty args
+                     'single triacetin molecule dHvap'))  # TODO call the function with nonempty args
