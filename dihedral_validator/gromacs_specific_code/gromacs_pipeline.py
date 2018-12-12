@@ -12,8 +12,9 @@ from dihedral_validator.input import read_input_file
 from dihedral_validator.gromacs_specific_code.gromacs_runner import determine_version
 from dihedral_validator.gromacs_specific_code.energy_computation import extract_from_edr_file
 from dihedral_validator.gromacs_specific_code.energy_computation import compute_free_energy
-from dihedral_validator.gromacs_specific_code.const import mdrun_dict, grompp_dict, genergy_dict, tpr_file_extension
+from dihedral_validator.gromacs_specific_code.const import mdrun_dict, grompp_dict, tpr_file_extension
 from dihedral_validator.gromacs_specific_code.temperature import extract_temperature_in_K_from_mdp_file
+from dihedral_validator.command_wrapper import SimpleCommandWrapper
 
 
 def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path: str, params_type: int,
@@ -38,6 +39,7 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
 
+    command_wrapper = SimpleCommandWrapper()
     with tempfile.NamedTemporaryFile() as tpr_gas_file:
         with tempfile.NamedTemporaryFile() as tpr_liquid_file:
             grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
@@ -48,18 +50,15 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
                 len(new_params))
             print(grompp_gas_cmd)
             print(grompp_liquid_cmd)
-            run_subprocesses_simultaneously(grompp_gas_cmd, grompp_liquid_cmd, shell=True)
-            # p_gas = subprocess.Popen(grompp_gas_cmd, shell=True)
-            # p_liquid = subprocess.Popen(grompp_liquid_cmd, shell=True)
-            # p_gas.wait()
-            # p_liquid.wait()
+            command_wrapper.run(grompp_gas_cmd)
+            command_wrapper.run(grompp_liquid_cmd)
             # co z warningami?
             mdrun_gas_cmd = '{} {}{}'.format(mdrun_dict[gromacs_version], tpr_gas_file.name, tpr_file_extension[gromacs_version])
             mdrun_liquid_cmd = '{} {}{}'.format(mdrun_dict[gromacs_version], tpr_liquid_file.name, tpr_file_extension[gromacs_version])
             print(mdrun_gas_cmd)
             print(mdrun_liquid_cmd)
-            run_subprocesses_simultaneously(mdrun_gas_cmd, mdrun_liquid_cmd, shell=True)
-            # todo można tu dać multiprocessing
+            command_wrapper.run(mdrun_gas_cmd)
+            command_wrapper.run(mdrun_liquid_cmd)
             liquid_potential = extract_from_edr_file(tpr_liquid_file.rsplit('.', 1)[0], 10, 'Potential',
                                                      gromacs_version)
             gas_potential = extract_from_edr_file(tpr_gas_file.name.rsplit('.', 1)[0], 9, 'Potential', gromacs_version)
