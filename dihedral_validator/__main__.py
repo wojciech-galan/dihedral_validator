@@ -28,9 +28,8 @@ def main(args=sys.argv[1:]):
     group.add_argument('--mdp_liquid_file', type=str, help='path to the .mdp file regarding liquid phase')
     group.add_argument('--top_gas_file', type=str, help='path to the .top file regarding gas phase')
     group.add_argument('--top_liquid_file', type=str, help='path to the .top file regarding liquid phase')
-    group.add_argument('--molecules_liquid_type', type=str, help='type of molecules in liquid phase')
     group.add_argument('--molecules_liquid_num', type=int, help='number of molecules in liquid phase')
-    group.add_argument('--molecules_gas_type', type=str, help='type of molecules in gas phase')
+    group.add_argument('--molecules_type', type=str, help='type of molecules')
     group.add_argument('--molecules_gas_num', type=int, default=1, help='number of molecules in gas phase')
     group.add_argument('--system_string', type=str, default='single triacetin molecule dHvap',
                        help='system section in .top file')
@@ -46,8 +45,8 @@ def run_analysis(arguments):
                          'File generated with dihedral_validator', arguments.top_liquid_file, arguments.mdp_liquid_file,
                          arguments.gro_liquid_file, arguments.top_gas_file,
                          arguments.mdp_gas_file, arguments.gro_gas_file,
-                         {arguments.molecules_liquid_type: arguments.molecules_liquid_num},
-                         {arguments.molecules_gas_type: arguments.molecules_gas_num}, arguments.system_string)
+                         {arguments.molecules_type: arguments.molecules_liquid_num},
+                         {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string)
 
 
 def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
