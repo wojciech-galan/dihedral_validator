@@ -34,7 +34,6 @@ def main(args=sys.argv[1:]):
     group.add_argument('--system_string', type=str, default='single triacetin molecule dHvap',
                        help='system section in .top file')
     parsed_args = parser.parse_args(args)
-    print(parsed_args)
     validate_arguments(parsed_args)
     print(run_analysis(parsed_args))
 
@@ -50,7 +49,6 @@ def run_analysis(arguments):
 
 
 def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
-    print(arguments)
     params = read_input_file(arguments.params_file)
     assert isinstance(params, dict)
     assert arguments.package in permited_values['packages']
