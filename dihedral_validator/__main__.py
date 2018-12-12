@@ -5,7 +5,6 @@ import argparse
 import sys
 print(__name__)
 print(sys.path)
-raise
 import os
 from dihedral_validator.input import read_input_file
 from dihedral_validator.gromacs_specific_code.gromacs_pipeline import gromacs_pipeline
