@@ -9,4 +9,4 @@ class SimpleCommandWrapper():
         super().__init__()
 
     def run(self, command):
-        subprocess.run(command, shell=True, stdout=subprocess.PIPE)
+        subprocess.run(command, shell=True)
