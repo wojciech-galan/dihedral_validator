@@ -10,7 +10,7 @@ setup(
     url='https://github.com/wojciech-galan/dihedral_validator',
     author='Wojciech Gałan',
     license='GNU GPL v3.0',
-
+    install_requires=['pyyaml'],
     packages=find_packages(),
     classifiers=[
         'Operating System :: OS Independent',
