@@ -54,8 +54,8 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
             # p_gas.wait()
             # p_liquid.wait()
             # co z warningami?
-            mdrun_gas_cmd = '{} -deffnm {}{}'.format(mdrun_dict[gromacs_version], tpr_gas_file.name, tpr_file_extension[gromacs_version])
-            mdrun_liquid_cmd = '{} -deffnm {}{}'.format(mdrun_dict[gromacs_version], tpr_liquid_file.name, tpr_file_extension[gromacs_version])
+            mdrun_gas_cmd = '{} {}{}'.format(mdrun_dict[gromacs_version], tpr_gas_file.name, tpr_file_extension[gromacs_version])
+            mdrun_liquid_cmd = '{} {}{}'.format(mdrun_dict[gromacs_version], tpr_liquid_file.name, tpr_file_extension[gromacs_version])
             print(mdrun_gas_cmd)
             print(mdrun_liquid_cmd)
             run_subprocesses_simultaneously(mdrun_gas_cmd, mdrun_liquid_cmd, shell=True)
