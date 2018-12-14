@@ -52,21 +52,24 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
             print(grompp_liquid_cmd)
             command_wrapper.run(grompp_gas_cmd)
             command_wrapper.run(grompp_liquid_cmd)
+            edr_gas_file_name = '{}.edr'.format(tpr_gas_file.name)
+            edr_liquid_file_name = '{}.edr'.format(tpr_gas_file.name)
             # co z warningami?
-            mdrun_gas_cmd = '{} {}{}'.format(mdrun_dict[gromacs_version], tpr_gas_file.name, tpr_file_extension[gromacs_version])
-            mdrun_liquid_cmd = '{} {}{}'.format(mdrun_dict[gromacs_version], tpr_liquid_file.name, tpr_file_extension[gromacs_version])
+            mdrun_gas_cmd = prepare_mdrun_command(gromacs_version, tpr_gas_file.name, edr_gas_file_name)
+            mdrun_liquid_cmd = prepare_mdrun_command(gromacs_version, tpr_liquid_file.name, edr_liquid_file_name)
             print(mdrun_gas_cmd)
             print(mdrun_liquid_cmd)
             command_wrapper.run(mdrun_gas_cmd)
+            gas_potential = extract_from_edr_file(edr_gas_file_name, 9, 'Potential', gromacs_version)
+            print(gas_potential)
             command_wrapper.run(mdrun_liquid_cmd)
-            liquid_potential = extract_from_edr_file(tpr_liquid_file.rsplit('.', 1)[0], 10, 'Potential',
-                                                     gromacs_version)
-            gas_potential = extract_from_edr_file(tpr_gas_file.name.rsplit('.', 1)[0], 9, 'Potential', gromacs_version)
+            liquid_potential = extract_from_edr_file(edr_liquid_file_name, 10, 'Potential', gromacs_version)
+            print(liquid_potential)
     assert len(molecules_liquid) == 1
     temperature_gas = extract_temperature_in_K_from_mdp_file(mdp_gas_path)
     temperature_liquid = extract_temperature_in_K_from_mdp_file(mdp_liquid_path)
     assert temperature_gas == temperature_liquid
-    return(compute_free_energy(liquid_potential, gas_potential, temperature_gas, molecules_liquid.values()[0]))
+    return compute_free_energy(liquid_potential, gas_potential, temperature_gas, molecules_liquid.values()[0])
 
 
 def run_subprocesses_simultaneously(cmd1, cmd2, **kwargs):
@@ -74,6 +77,17 @@ def run_subprocesses_simultaneously(cmd1, cmd2, **kwargs):
     p2 = subprocess.Popen(cmd2, **kwargs)
     p1.wait()
     p2.wait()
+
+
+def prepare_mdrun_command(gromacs_version:str, tpr_filename:str, edr_filename:str = None):
+    base_cmd = mdrun_dict[gromacs_version]
+    tpr_final_filename = '{}{}'.format(tpr_filename, tpr_file_extension[gromacs_version])
+    if gromacs_version == '2018':
+        return '{} -s {} -e {}'.format(base_cmd, tpr_final_filename, edr_filename)
+    elif gromacs_version == '4':
+        return '{} -deffnm {}'.format(base_cmd, tpr_final_filename)
+    else:
+        raise RuntimeError('Gromacs version not supported')
 
 
 if __name__ == '__main__':
