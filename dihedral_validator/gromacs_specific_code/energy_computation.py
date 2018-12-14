@@ -29,17 +29,15 @@ def extract_from_edr_file(edr_file_path: str, choice: int, choice_string: str, g
     validate_number(choice)
     truncated_edr_file_path = edr_file_path.replace('.edr', '')
     with tempfile.NamedTemporaryFile() as outfile:
-        print(gromacs_version)
         if gromacs_version == '2018':
-            p = subprocess.Popen(
-                '{} -f {} -o {}'.format(genergy_dict[gromacs_version], truncated_edr_file_path, outfile.name),
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, encoding='utf-8')
+            cmd = '{} -f {} -o {}'.format(genergy_dict[gromacs_version], edr_file_path, outfile.name)
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
+                                 encoding='utf-8')
             out, err = p.communicate('{:d}/n/n'.format(choice))
             return extract_values_from_genergy_output(out, choice_string)
         elif gromacs_version == '4':
-            p = subprocess.Popen(
-                '{} -f {} -o {}'.format(genergy_dict[gromacs_version], truncated_edr_file_path, outfile.name),
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            cmd = '{} -f {} -o {}'.format(genergy_dict[gromacs_version], truncated_edr_file_path, outfile.name)
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             out, err = p.communicate('{:d}/n/n'.format(choice).encode())
             return extract_values_from_genergy_output(out.decode(), choice_string)
 
