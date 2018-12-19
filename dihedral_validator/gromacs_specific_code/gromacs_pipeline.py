@@ -54,22 +54,20 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
             command_wrapper.run(grompp_liquid_cmd)
             edr_gas_file_name = '{}.edr'.format(tpr_gas_file.name)
             edr_liquid_file_name = '{}.edr'.format(tpr_gas_file.name)
-            # co z warningami?
+            # TODO co z warningami?
             mdrun_gas_cmd = prepare_mdrun_command(gromacs_version, tpr_gas_file.name, edr_gas_file_name)
             mdrun_liquid_cmd = prepare_mdrun_command(gromacs_version, tpr_liquid_file.name, edr_liquid_file_name)
             print(mdrun_gas_cmd)
             print(mdrun_liquid_cmd)
             command_wrapper.run(mdrun_gas_cmd)
             gas_potential = extract_from_edr_file(edr_gas_file_name, 9, 'Potential', gromacs_version)
-            print(gas_potential)
             command_wrapper.run(mdrun_liquid_cmd)
             liquid_potential = extract_from_edr_file(edr_liquid_file_name, 10, 'Potential', gromacs_version)
-            print(liquid_potential)
     assert len(molecules_liquid) == 1
     temperature_gas = extract_temperature_in_K_from_mdp_file(mdp_gas_path)
     temperature_liquid = extract_temperature_in_K_from_mdp_file(mdp_liquid_path)
     assert temperature_gas == temperature_liquid
-    return compute_free_energy(liquid_potential, gas_potential, temperature_gas, molecules_liquid.values()[0])
+    return compute_free_energy(liquid_potential, gas_potential, temperature_gas, list(molecules_liquid.values())[0])
 
 
 def run_subprocesses_simultaneously(cmd1, cmd2, **kwargs):
