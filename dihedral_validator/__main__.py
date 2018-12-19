@@ -40,12 +40,12 @@ def main(args=sys.argv[1:]):
 
 def run_analysis(arguments):
     if arguments.package == 'gromacs':
-        gromacs_pipeline(arguments.itp_template, arguments.itp_output, arguments.params_file, arguments.param_type, {},
-                         'File generated with dihedral_validator', arguments.top_liquid_file, arguments.mdp_liquid_file,
-                         arguments.gro_liquid_file, arguments.top_gas_file,
-                         arguments.mdp_gas_file, arguments.gro_gas_file,
-                         {arguments.molecules_type: arguments.molecules_liquid_num},
-                         {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string)
+        return gromacs_pipeline(arguments.itp_template, arguments.itp_output, arguments.params_file,
+                                arguments.param_type, {}, 'File generated with dihedral_validator',
+                                arguments.top_liquid_file, arguments.mdp_liquid_file,
+                                arguments.gro_liquid_file, arguments.top_gas_file, arguments.mdp_gas_file,
+                                arguments.gro_gas_file, {arguments.molecules_type: arguments.molecules_liquid_num},
+                                {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string)
 
 
 def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
