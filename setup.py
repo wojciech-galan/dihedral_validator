@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="dihedral_validator",
-    version='0.0.0',
+    version='0.0.1',
     description='no description',
     url='https://github.com/wojciech-galan/dihedral_validator',
     author='Wojciech Gałan',
