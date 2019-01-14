@@ -53,7 +53,7 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
             command_wrapper.run(grompp_gas_cmd)
             command_wrapper.run(grompp_liquid_cmd)
             edr_gas_file_name = '{}.edr'.format(tpr_gas_file.name)
-            edr_liquid_file_name = '{}.edr'.format(tpr_gas_file.name)
+            edr_liquid_file_name = '{}.edr'.format(tpr_liquid_file.name)
             # TODO co z warningami?
             mdrun_gas_cmd = prepare_mdrun_command(gromacs_version, tpr_gas_file.name, edr_gas_file_name)
             mdrun_liquid_cmd = prepare_mdrun_command(gromacs_version, tpr_liquid_file.name, edr_liquid_file_name)
