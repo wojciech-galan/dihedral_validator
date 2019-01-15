@@ -33,6 +33,7 @@ def main(args=sys.argv[1:]):
     group.add_argument('--molecules_gas_num', type=int, default=1, help='number of molecules in gas phase')
     group.add_argument('--system_string', type=str, default='single triacetin molecule dHvap',
                        help='system section in .top file')
+    group.add_argument('--out_dir', type=str, help='directory gromacs output files')
     parsed_args = parser.parse_args(args)
     validate_arguments(parsed_args)
     print(run_analysis(parsed_args))
@@ -45,7 +46,8 @@ def run_analysis(arguments):
                                 arguments.top_liquid_file, arguments.mdp_liquid_file,
                                 arguments.gro_liquid_file, arguments.top_gas_file, arguments.mdp_gas_file,
                                 arguments.gro_gas_file, {arguments.molecules_type: arguments.molecules_liquid_num},
-                                {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string)
+                                {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string,
+                                arguments.out_dir)
 
 
 def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
@@ -58,7 +60,8 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
             try_open_for_reading(eval('arguments.{}'.format(arg_name)))
         for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
             path = os.path.dirname(os.path.abspath(eval('arguments.{}'.format(arg_name))))
-            check_directory_write_access(path)
+            check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
+        check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
