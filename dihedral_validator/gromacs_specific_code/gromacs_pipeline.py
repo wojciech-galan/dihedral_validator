@@ -21,15 +21,16 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
                      ipt_comment_substitution: Dict[str, str], ipt_general_comments: str, top_liquid_path: str,
                      mdp_liquid_path: str, gro_liquid_path: str, top_gas_path: str, mdp_gas_path: str,
                      gro_gas_path: str, molecules_liquid: Dict[str, int], molecules_gas: Dict[str, int],
-                     system_line: str, forcefield_itp_path: str = 'oplsaa.ff/forcefield.itp',
+                     system_line: str, gromacs_output_dir: str, forcefield_itp_path: str = 'oplsaa.ff/forcefield.itp',
                      newline: str = '\n'):
     itp_template_modification_time = time.asctime(time.gmtime(os.path.getmtime(itp_template_path)))
     params_modification_time = time.asctime(time.gmtime(os.path.getmtime(new_params_path)))
     itp_template_abspath = os.path.abspath(itp_template_path)
     params_abspath = os.path.abspath(new_params_path)
-    time_now = time.asctime(time.gmtime())
+    time_run = time.gmtime()
+    time_simple_string = time.asctime(time_run)
     ipt_general_comments += '{}This file was created on {}{} based on template {} modified on {}{} and params {} modified on {}'.format(
-        newline, time_now, newline, itp_template_abspath, itp_template_modification_time, newline, params_abspath,
+        newline, time_simple_string, newline, itp_template_abspath, itp_template_modification_time, newline, params_abspath,
         params_modification_time)
     new_params = read_input_file(new_params_path)
     gromacs_version = determine_version().split('.')[0]
@@ -38,8 +39,11 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     create_top_file(os.path.abspath(itp_out_path), molecules_gas, system_line, top_gas_path, forcefield_itp_path, newline)
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
-
+    time_formatted_for_filename = time.strftime('%Y_%m_%d_hour_%H_%M_%S', time_run)
+    print(time_formatted_for_filename)
+    raise
     command_wrapper = SimpleCommandWrapper()
+    tpr_gas_file_name = os.path.join(os.path.abspath(gromacs_output_dir))
     with tempfile.NamedTemporaryFile() as tpr_gas_file:
         with tempfile.NamedTemporaryFile() as tpr_liquid_file:
             grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
@@ -98,4 +102,4 @@ if __name__ == '__main__':
                      3, {}, '', 'temp/liquid_top.top', 'example/gromacs_specific_files/liquid_10ns.mdp', 'example/gromacs_specific_files/md-liquid_10ns-qqAWA_q1.gro',
                      'temp/gas_top.top', 'example/gromacs_specific_files/gas_10ns.mdp',
                      'example/gromacs_specific_files/md-gas_10ns-qqAWA_q1.gro', {'triacetin': 100}, {'triacetin': 1},
-                     'single triacetin molecule dHvap'))  # TODO call the function with nonempty args
+                     'single triacetin molecule dHvap', 'blah'))  # TODO call the function with nonempty args
