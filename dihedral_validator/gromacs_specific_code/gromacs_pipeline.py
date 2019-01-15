@@ -40,33 +40,30 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
     time_formatted_for_filename = time.strftime('%Y_%m_%d_hour_%H_%M_%S', time_run)
-    print(time_formatted_for_filename)
-    raise
     command_wrapper = SimpleCommandWrapper()
-    tpr_gas_file_name = os.path.join(os.path.abspath(gromacs_output_dir))
-    with tempfile.NamedTemporaryFile() as tpr_gas_file:
-        with tempfile.NamedTemporaryFile() as tpr_liquid_file:
-            grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
-                grompp_dict[gromacs_version], mdp_gas_path, top_gas_path, gro_gas_path, tpr_gas_file.name,
-                len(new_params))
-            grompp_liquid_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
-                grompp_dict[gromacs_version], mdp_liquid_path, top_liquid_path, gro_liquid_path, tpr_liquid_file.name,
-                len(new_params))
-            print(grompp_gas_cmd)
-            print(grompp_liquid_cmd)
-            command_wrapper.run(grompp_gas_cmd)
-            command_wrapper.run(grompp_liquid_cmd)
-            edr_gas_file_name = '{}.edr'.format(tpr_gas_file.name)
-            edr_liquid_file_name = '{}.edr'.format(tpr_liquid_file.name)
-            # TODO co z warningami?
-            mdrun_gas_cmd = prepare_mdrun_command(gromacs_version, tpr_gas_file.name, edr_gas_file_name)
-            mdrun_liquid_cmd = prepare_mdrun_command(gromacs_version, tpr_liquid_file.name, edr_liquid_file_name)
-            print(mdrun_gas_cmd)
-            print(mdrun_liquid_cmd)
-            command_wrapper.run(mdrun_gas_cmd)
-            gas_potential = extract_from_edr_file(edr_gas_file_name, 9, 'Potential', gromacs_version)
-            command_wrapper.run(mdrun_liquid_cmd)
-            liquid_potential = extract_from_edr_file(edr_liquid_file_name, 10, 'Potential', gromacs_version)
+    tpr_gas_file_name = os.path.join(os.path.abspath(gromacs_output_dir), time_formatted_for_filename + '.tpr_gas')
+    tpr_liquid_file_name = os.path.join(os.path.abspath(gromacs_output_dir), time_formatted_for_filename + '.tpr_liquid')
+    grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
+        grompp_dict[gromacs_version], mdp_gas_path, top_gas_path, gro_gas_path, tpr_gas_file_name,
+        len(new_params))
+    grompp_liquid_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
+        grompp_dict[gromacs_version], mdp_liquid_path, top_liquid_path, gro_liquid_path, tpr_liquid_file_name,
+        len(new_params))
+    print(grompp_gas_cmd)
+    print(grompp_liquid_cmd)
+    command_wrapper.run(grompp_gas_cmd)
+    command_wrapper.run(grompp_liquid_cmd)
+    edr_gas_file_name = '{}.edr'.format(tpr_gas_file_name)
+    edr_liquid_file_name = '{}.edr'.format(tpr_liquid_file_name)
+    # TODO co z warningami?
+    mdrun_gas_cmd = prepare_mdrun_command(gromacs_version, tpr_gas_file_name, edr_gas_file_name)
+    mdrun_liquid_cmd = prepare_mdrun_command(gromacs_version, tpr_liquid_file_name, edr_liquid_file_name)
+    print(mdrun_gas_cmd)
+    print(mdrun_liquid_cmd)
+    command_wrapper.run(mdrun_gas_cmd)
+    gas_potential = extract_from_edr_file(edr_gas_file_name, 9, 'Potential', gromacs_version)
+    command_wrapper.run(mdrun_liquid_cmd)
+    liquid_potential = extract_from_edr_file(edr_liquid_file_name, 10, 'Potential', gromacs_version)
     assert len(molecules_liquid) == 1
     temperature_gas = extract_temperature_in_K_from_mdp_file(mdp_gas_path)
     temperature_liquid = extract_temperature_in_K_from_mdp_file(mdp_liquid_path)
