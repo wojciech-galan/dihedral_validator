@@ -59,7 +59,6 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
         for arg_name in ['itp_template', 'gro_gas_file', 'gro_liquid_file', 'mdp_gas_file', 'mdp_liquid_file']:
             try_open_for_reading(eval('arguments.{}'.format(arg_name)))
         for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
-            path = os.path.dirname(os.path.abspath(eval('arguments.{}'.format(arg_name))))
             check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
         check_directory_write_access(os.path.abspath(arguments.out_dir))
     else:
