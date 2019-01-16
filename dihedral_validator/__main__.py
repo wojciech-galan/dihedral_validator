@@ -61,7 +61,7 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
         for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
             path = os.path.dirname(os.path.abspath(eval('arguments.{}'.format(arg_name))))
             check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
-        check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
+        check_directory_write_access(os.path.abspath(arguments.out_dir))
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
