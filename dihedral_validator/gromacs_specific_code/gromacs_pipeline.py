@@ -3,7 +3,6 @@
 
 import os
 import time
-import tempfile
 import subprocess
 from typing import Dict
 from dihedral_validator.gromacs_specific_code.create_top import create_top_file
