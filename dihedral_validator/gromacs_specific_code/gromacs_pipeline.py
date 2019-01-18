@@ -15,7 +15,6 @@ from dihedral_validator.gromacs_specific_code.energy_computation import compute_
 from dihedral_validator.gromacs_specific_code.const import mdrun_dict, grompp_dict, tpr_file_extension
 from dihedral_validator.gromacs_specific_code.temperature import extract_temperature_in_K_from_mdp_file
 from dihedral_validator.command_wrapper import SimpleCommandWrapper
-from dihedral_validator.lib import create_time_str_for_filename
 
 
 def gromacs_pipeline(itp_template_path: str, itp_out_path:str, new_params_path: str, params_type: int,
@@ -42,10 +41,8 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path:str, new_params_path: 
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
     command_wrapper = SimpleCommandWrapper()
-    tpr_gas_file_name = os.path.join(os.path.abspath(output_dir),
-                                     create_time_str_for_filename(time.gmtime()) + '.tpr_gas')
-    tpr_liquid_file_name = os.path.join(os.path.abspath(output_dir),
-                                        create_time_str_for_filename(time.gmtime()) + '.tpr_liquid')
+    tpr_gas_file_name = os.path.join(os.path.abspath(output_dir), 'gas.tpr')
+    tpr_liquid_file_name = os.path.join(os.path.abspath(output_dir), 'liquid.tpr')
     grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
         grompp_dict[gromacs_version], mdp_gas_path, top_gas_path, gro_gas_path, tpr_gas_file_name,
         len(new_params))
