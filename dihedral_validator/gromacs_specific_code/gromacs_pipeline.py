@@ -15,6 +15,7 @@ from dihedral_validator.gromacs_specific_code.energy_computation import compute_
 from dihedral_validator.gromacs_specific_code.const import mdrun_dict, grompp_dict, tpr_file_extension
 from dihedral_validator.gromacs_specific_code.temperature import extract_temperature_in_K_from_mdp_file
 from dihedral_validator.command_wrapper import SimpleCommandWrapper
+from dihedral_validator.lib import create_time_str_for_filename
 
 
 def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path: str, params_type: int,
@@ -27,8 +28,7 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     params_modification_time = time.asctime(time.gmtime(os.path.getmtime(new_params_path)))
     itp_template_abspath = os.path.abspath(itp_template_path)
     params_abspath = os.path.abspath(new_params_path)
-    time_run = time.gmtime()
-    time_simple_string = time.asctime(time_run)
+    time_simple_string = time.asctime(time.gmtime())
     ipt_general_comments += '{}This file was created on {}{} based on template {} modified on {}{} and params {} modified on {}'.format(
         newline, time_simple_string, newline, itp_template_abspath, itp_template_modification_time, newline, params_abspath,
         params_modification_time)
@@ -39,10 +39,11 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     create_top_file(os.path.abspath(itp_out_path), molecules_gas, system_line, top_gas_path, forcefield_itp_path, newline)
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
-    time_formatted_for_filename = time.strftime('%Y_%m_%d_hour_%H_%M_%S', time_run)
     command_wrapper = SimpleCommandWrapper()
-    tpr_gas_file_name = os.path.join(os.path.abspath(gromacs_output_dir), time_formatted_for_filename + '.tpr_gas')
-    tpr_liquid_file_name = os.path.join(os.path.abspath(gromacs_output_dir), time_formatted_for_filename + '.tpr_liquid')
+    tpr_gas_file_name = os.path.join(os.path.abspath(gromacs_output_dir),
+                                     create_time_str_for_filename(time.gmtime()) + '.tpr_gas')
+    tpr_liquid_file_name = os.path.join(os.path.abspath(gromacs_output_dir),
+                                        create_time_str_for_filename(time.gmtime()) + '.tpr_liquid')
     grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
         grompp_dict[gromacs_version], mdp_gas_path, top_gas_path, gro_gas_path, tpr_gas_file_name,
         len(new_params))
