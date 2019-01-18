@@ -30,13 +30,15 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     params_abspath = os.path.abspath(new_params_path)
     time_simple_string = time.asctime(time.gmtime())
     ipt_general_comments += '{}This file was created on {}{} based on template {} modified on {}{} and params {} modified on {}'.format(
-        newline, time_simple_string, newline, itp_template_abspath, itp_template_modification_time, newline, params_abspath,
+        newline, time_simple_string, newline, itp_template_abspath, itp_template_modification_time, newline,
+        params_abspath,
         params_modification_time)
     new_params = read_input_file(new_params_path)
     gromacs_version = determine_version().split('.')[0]
     prepare_itp_file(itp_template_path, new_params, params_type, itp_out_path, ipt_comment_substitution,
                      ipt_general_comments, newline)
-    create_top_file(os.path.abspath(itp_out_path), molecules_gas, system_line, top_gas_path, forcefield_itp_path, newline)
+    create_top_file(os.path.abspath(itp_out_path), molecules_gas, system_line, top_gas_path, forcefield_itp_path,
+                    newline)
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
     command_wrapper = SimpleCommandWrapper()
@@ -79,7 +81,7 @@ def run_subprocesses_simultaneously(cmd1, cmd2, **kwargs):
     p2.wait()
 
 
-def prepare_mdrun_command(gromacs_version:str, tpr_filename:str, edr_filename:str = None):
+def prepare_mdrun_command(gromacs_version: str, tpr_filename: str, edr_filename: str = None):
     base_cmd = mdrun_dict[gromacs_version]
     tpr_final_filename = '{}{}'.format(tpr_filename, tpr_file_extension[gromacs_version])
     if gromacs_version == '2018':
@@ -96,8 +98,11 @@ if __name__ == '__main__':
     # example / gromacs_specific_files / gas_10ns - qqAWA_q1_new_t3t4.top - c
     # example / gromacs_specific_files / md - gas_10ns - qqAWA_q1.gro - o
     # temp / md - gas.tpr
-    print(gromacs_pipeline('example/gromacs_specific_files/triacetin_qqAWA_q1_new_t3t4.itp', 'temp/out_itp', 'example/input',
-                     3, {}, '', 'temp/liquid_top.top', 'example/gromacs_specific_files/liquid_10ns.mdp', 'example/gromacs_specific_files/md-liquid_10ns-qqAWA_q1.gro',
-                     'temp/gas_top.top', 'example/gromacs_specific_files/gas_10ns.mdp',
-                     'example/gromacs_specific_files/md-gas_10ns-qqAWA_q1.gro', {'triacetin': 100}, {'triacetin': 1},
-                     'single triacetin molecule dHvap', 'blah'))  # TODO call the function with nonempty args
+    print(gromacs_pipeline('example/gromacs_specific_files/triacetin_qqAWA_q1_new_t3t4.itp', 'temp/out_itp',
+                           'example/input', 3, {}, '', 'temp/liquid_top.top',
+                           'example/gromacs_specific_files/liquid_10ns.mdp',
+                           'example/gromacs_specific_files/md-liquid_10ns-qqAWA_q1.gro',
+                           'temp/gas_top.top', 'example/gromacs_specific_files/gas_10ns.mdp',
+                           'example/gromacs_specific_files/md-gas_10ns-qqAWA_q1.gro', {'triacetin': 100},
+                           {'triacetin': 1}, 'single triacetin molecule dHvap',
+                           'blah'))  # TODO call the function with nonempty args
