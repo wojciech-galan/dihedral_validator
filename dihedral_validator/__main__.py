@@ -67,7 +67,7 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
             os.mkdir(out_dir_path)
         except FileExistsError as fee:
             raise FileExistsError('File {} already exists'.format(fee.filename))
-        check_directory_write_access(os.path.abspath(arguments.out_dir))
+        check_directory_write_access(out_dir_path)
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
