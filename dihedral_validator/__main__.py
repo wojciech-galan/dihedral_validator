@@ -4,8 +4,10 @@
 import argparse
 import sys
 import os
+import time
 from dihedral_validator.input import read_input_file
 from dihedral_validator.gromacs_specific_code.gromacs_pipeline import gromacs_pipeline
+from dihedral_validator.lib import create_time_str_for_filename
 
 PERMITTED_VALUES = {
     'packages': ['gromacs'],
@@ -33,7 +35,7 @@ def main(args=sys.argv[1:]):
     group.add_argument('--molecules_gas_num', type=int, default=1, help='number of molecules in gas phase')
     group.add_argument('--system_string', type=str, default='single triacetin molecule dHvap',
                        help='system section in .top file')
-    group.add_argument('--out_dir', type=str, help='directory gromacs output files')
+    group.add_argument('--out_dir', type=str, help='directory gromacs output files', default=None)
     parsed_args = parser.parse_args(args)
     validate_arguments(parsed_args)
     print(run_analysis(parsed_args))
@@ -60,6 +62,8 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
             try_open_for_reading(eval('arguments.{}'.format(arg_name)))
         for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
             check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
+        out_dir_path = create_out_dir_path(arguments.out_dir)
+        os.mkdir(out_dir_path)
         check_directory_write_access(os.path.abspath(arguments.out_dir))
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
@@ -73,6 +77,12 @@ def try_open_for_reading(path: str):
 def check_directory_write_access(path: str):
     if not os.access(path, os.W_OK):
         raise OSError('Either {} directory does not exist or you cannot write to it.'.format(os.path.abspath(path)))
+
+
+def create_out_dir_path(dir_name:str) -> str:
+    if not dir_name:
+        dir_name = 'out_' + create_time_str_for_filename(time.gmtime())
+    return os.path.abspath(dir_name)
 
 
 if __name__ == '__main__':
