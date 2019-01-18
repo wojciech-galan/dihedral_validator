@@ -18,11 +18,11 @@ from dihedral_validator.command_wrapper import SimpleCommandWrapper
 from dihedral_validator.lib import create_time_str_for_filename
 
 
-def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path: str, params_type: int,
+def gromacs_pipeline(itp_template_path: str, itp_out_path:str, new_params_path: str, params_type: int,
                      ipt_comment_substitution: Dict[str, str], ipt_general_comments: str, top_liquid_path: str,
                      mdp_liquid_path: str, gro_liquid_path: str, top_gas_path: str, mdp_gas_path: str,
                      gro_gas_path: str, molecules_liquid: Dict[str, int], molecules_gas: Dict[str, int],
-                     system_line: str, gromacs_output_dir: str, forcefield_itp_path: str = 'oplsaa.ff/forcefield.itp',
+                     system_line: str, output_dir: str, forcefield_itp_path: str = 'oplsaa.ff/forcefield.itp',
                      newline: str = '\n'):
     itp_template_modification_time = time.asctime(time.gmtime(os.path.getmtime(itp_template_path)))
     params_modification_time = time.asctime(time.gmtime(os.path.getmtime(new_params_path)))
@@ -42,9 +42,9 @@ def gromacs_pipeline(itp_template_path: str, itp_out_path: str, new_params_path:
     create_top_file(os.path.abspath(itp_out_path), molecules_liquid, system_line, top_liquid_path, forcefield_itp_path,
                     newline)
     command_wrapper = SimpleCommandWrapper()
-    tpr_gas_file_name = os.path.join(os.path.abspath(gromacs_output_dir),
+    tpr_gas_file_name = os.path.join(os.path.abspath(output_dir),
                                      create_time_str_for_filename(time.gmtime()) + '.tpr_gas')
-    tpr_liquid_file_name = os.path.join(os.path.abspath(gromacs_output_dir),
+    tpr_liquid_file_name = os.path.join(os.path.abspath(output_dir),
                                         create_time_str_for_filename(time.gmtime()) + '.tpr_liquid')
     grompp_gas_cmd = '{} -f {} -p {} -c {} -o {} -maxwarn {}'.format(
         grompp_dict[gromacs_version], mdp_gas_path, top_gas_path, gro_gas_path, tpr_gas_file_name,

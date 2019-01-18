@@ -5,6 +5,7 @@ import argparse
 import sys
 import os
 import time
+import copy
 from dihedral_validator.input import read_input_file
 from dihedral_validator.gromacs_specific_code.gromacs_pipeline import gromacs_pipeline
 from dihedral_validator.lib import create_time_str_for_filename
@@ -23,33 +24,63 @@ def main(args=sys.argv[1:]):
     # gromacs - specific
     group = parser.add_argument_group('gromacs', 'gromacs-specific arguments')
     group.add_argument('--itp_template', type=str, help='path to the template .itp file')
-    group.add_argument('--itp_output', type=str, help='output .itp file path')
+    group.add_argument('--itp_output', type=str, help='output .itp file path', default=None)
     group.add_argument('--gro_gas_file', '-g', type=str, help='path to the .gro file regarding gas phase')
     group.add_argument('--gro_liquid_file', type=str, help='path to the .gro file regarding liquid phase')
     group.add_argument('--mdp_gas_file', type=str, help='path to the .mdp file regarding gas phase')
     group.add_argument('--mdp_liquid_file', type=str, help='path to the .mdp file regarding liquid phase')
-    group.add_argument('--top_gas_file', type=str, help='path to the .top file regarding gas phase')
-    group.add_argument('--top_liquid_file', type=str, help='path to the .top file regarding liquid phase')
+    group.add_argument('--top_gas_file', type=str, help='path to the .top file regarding gas phase', default=None)
+    group.add_argument('--top_liquid_file', type=str, help='path to the .top file regarding liquid phase', default=None)
     group.add_argument('--molecules_liquid_num', type=int, help='number of molecules in liquid phase')
     group.add_argument('--molecules_type', type=str, help='type of molecules')
     group.add_argument('--molecules_gas_num', type=int, default=1, help='number of molecules in gas phase')
     group.add_argument('--system_string', type=str, default='single triacetin molecule dHvap',
                        help='system section in .top file')
-    group.add_argument('--out_dir', type=str, help='directory gromacs output files', default=None)
+    group.add_argument('--out_dir', type=str, help='directory for output files', default=None)
     parsed_args = parser.parse_args(args)
     validate_arguments(parsed_args)
-    print(run_analysis(parsed_args))
+    out_dir_path = create_out_dir_path(parsed_args.out_dir)
+    try:
+        os.mkdir(out_dir_path)
+    except FileExistsError as fee:
+        raise FileExistsError('File {} already exists'.format(fee.filename))
+    check_directory_write_access(out_dir_path)
+    print(run_analysis(parsed_args, out_dir_path))
 
 
-def run_analysis(arguments):
+def run_analysis(arguments, out_dir_path:str):
     if arguments.package == 'gromacs':
-        return gromacs_pipeline(arguments.itp_template, arguments.itp_output, arguments.params_file,
+        if arguments.itp_output:
+            itp_out_path = arguments.itp_output
+        else:
+            itp_template_filename = os.path.basename(arguments.itp_template)
+            itp_out_path = os.path.join(out_dir_path, itp_template_filename)
+        assert os.path.abspath(arguments.itp_template) != os.path.abspath(itp_out_path)
+        if arguments.top_gas_file:
+            top_gas_path = arguments.top_gas_file
+        else:
+            top_gas_path = os.path.join(out_dir_path, 'gas.top')
+        if arguments.top_liquid_file:
+            top_liquid_path = arguments.top_liquid_file
+        else:
+            top_liquid_path = os.path.join(out_dir_path, 'liquid.top')
+        abs_itp_template = os.path.abspath(arguments.itp_template)
+        abs_params_file = os.path.abspath(arguments.params_file)
+        abs_mdp_liquid_file = os.path.abspath(arguments.mdp_liquid_file)
+        abs_gro_liquid_file = os.path.abspath(arguments.gro_liquid_file)
+        abs_mdp_gas_file = os.path.abspath(arguments.mdp_gas_file)
+        abs_gro_gas_file = os.path.abspath(arguments.gro_gas_file)
+        backup_dir = os.getcwd()
+        os.chdir(out_dir_path)
+        result = gromacs_pipeline(abs_itp_template, itp_out_path, abs_params_file,
                                 arguments.param_type, {}, 'File generated with dihedral_validator',
-                                arguments.top_liquid_file, arguments.mdp_liquid_file,
-                                arguments.gro_liquid_file, arguments.top_gas_file, arguments.mdp_gas_file,
-                                arguments.gro_gas_file, {arguments.molecules_type: arguments.molecules_liquid_num},
+                                top_liquid_path, abs_mdp_liquid_file,
+                                abs_gro_liquid_file, top_gas_path, abs_mdp_gas_file,
+                                abs_gro_gas_file, {arguments.molecules_type: arguments.molecules_liquid_num},
                                 {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string,
-                                arguments.out_dir)
+                                out_dir_path)
+        os.chdir(backup_dir)
+        return result
 
 
 def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
@@ -58,16 +89,12 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
     assert arguments.package in permited_values['packages']
     assert arguments.param_type in permited_values['param_types']
     if arguments.package == 'gromacs':
-        for arg_name in ['itp_template', 'gro_gas_file', 'gro_liquid_file', 'mdp_gas_file', 'mdp_liquid_file']:
+        for arg_name in ['gro_gas_file', 'gro_liquid_file', 'mdp_gas_file', 'mdp_liquid_file']:
             try_open_for_reading(eval('arguments.{}'.format(arg_name)))
         for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
-            check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
-        out_dir_path = create_out_dir_path(arguments.out_dir)
-        try:
-            os.mkdir(out_dir_path)
-        except FileExistsError as fee:
-            raise FileExistsError('File {} already exists'.format(fee.filename))
-        check_directory_write_access(out_dir_path)
+            argument = eval('arguments.{}'.format(arg_name))
+            if argument:
+                check_directory_write_access(os.path.abspath(argument))
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
 
