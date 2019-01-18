@@ -39,31 +39,31 @@ def main(args=sys.argv[1:]):
     group.add_argument('--out_dir', type=str, help='directory for output files', default=None)
     parsed_args = parser.parse_args(args)
     validate_arguments(parsed_args)
-    out_dir_path = create_out_dir_path(parsed_args.out_dir)
+    out_dir_abspath = create_out_dir_path(parsed_args.out_dir)
     try:
-        os.mkdir(out_dir_path)
+        os.mkdir(out_dir_abspath)
     except FileExistsError as fee:
         raise FileExistsError('File {} already exists'.format(fee.filename))
-    check_directory_write_access(out_dir_path)
-    print(run_analysis(parsed_args, out_dir_path))
+    check_directory_write_access(out_dir_abspath)
+    print(run_analysis(parsed_args, out_dir_abspath))
 
 
-def run_analysis(arguments, out_dir_path:str):
+def run_analysis(arguments, out_dir_abspath:str):
     if arguments.package == 'gromacs':
         if arguments.itp_output:
-            itp_out_path = arguments.itp_output
+            itp_out_path = os.path.abspath(arguments.itp_output)
         else:
             itp_template_filename = os.path.basename(arguments.itp_template)
-            itp_out_path = os.path.join(out_dir_path, itp_template_filename)
+            itp_out_path = os.path.join(out_dir_abspath, itp_template_filename)
         assert os.path.abspath(arguments.itp_template) != os.path.abspath(itp_out_path)
         if arguments.top_gas_file:
-            top_gas_path = arguments.top_gas_file
+            top_gas_path = os.path.abspath(arguments.top_gas_file)
         else:
-            top_gas_path = os.path.join(out_dir_path, 'gas.top')
+            top_gas_path = os.path.join(out_dir_abspath, 'gas.top')
         if arguments.top_liquid_file:
-            top_liquid_path = arguments.top_liquid_file
+            top_liquid_path =os.path.abspath(arguments.top_liquid_file)
         else:
-            top_liquid_path = os.path.join(out_dir_path, 'liquid.top')
+            top_liquid_path = os.path.join(out_dir_abspath, 'liquid.top')
         abs_itp_template = os.path.abspath(arguments.itp_template)
         abs_params_file = os.path.abspath(arguments.params_file)
         abs_mdp_liquid_file = os.path.abspath(arguments.mdp_liquid_file)
@@ -71,14 +71,14 @@ def run_analysis(arguments, out_dir_path:str):
         abs_mdp_gas_file = os.path.abspath(arguments.mdp_gas_file)
         abs_gro_gas_file = os.path.abspath(arguments.gro_gas_file)
         backup_dir = os.getcwd()
-        os.chdir(out_dir_path)
+        os.chdir(out_dir_abspath)
         result = gromacs_pipeline(abs_itp_template, itp_out_path, abs_params_file,
                                 arguments.param_type, {}, 'File generated with dihedral_validator',
                                 top_liquid_path, abs_mdp_liquid_file,
                                 abs_gro_liquid_file, top_gas_path, abs_mdp_gas_file,
                                 abs_gro_gas_file, {arguments.molecules_type: arguments.molecules_liquid_num},
                                 {arguments.molecules_type: arguments.molecules_gas_num}, arguments.system_string,
-                                out_dir_path)
+                                out_dir_abspath)
         os.chdir(backup_dir)
         return result
 
