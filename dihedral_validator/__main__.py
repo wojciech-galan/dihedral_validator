@@ -63,7 +63,10 @@ def validate_arguments(arguments, permited_values: dict = PERMITTED_VALUES):
         for arg_name in ['itp_output', 'top_gas_file', 'top_liquid_file']:
             check_directory_write_access(os.path.abspath(eval('arguments.{}'.format(arg_name))))
         out_dir_path = create_out_dir_path(arguments.out_dir)
-        os.mkdir(out_dir_path)
+        try:
+            os.mkdir(out_dir_path)
+        except FileExistsError as fee:
+            raise FileExistsError('File {} already exists'.format(fee.filemane))
         check_directory_write_access(os.path.abspath(arguments.out_dir))
     else:
         raise RuntimeError('Unknown package {}'.format(arguments.package))
